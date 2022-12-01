@@ -24,25 +24,28 @@ def healthcheck():
 @app.route('/validate-fish', methods=['POST'])
 def upload_file():
     if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(conf.UPLOAD_FOLDER, filename))
-            ret,acc=validaImagem(os.path.join(conf.UPLOAD_FOLDER, filename))
-            os.remove(os.path.join(conf.UPLOAD_FOLDER, filename))
-            return jsonify(
-               type=ret,
-               accuracy=float(acc)
-              )
+        try:
+            if 'file' not in request.files:
+                flash('No file part')
+                return redirect(request.url)
+            file = request.files['file']
+            if file.filename == '':
+                flash('No selected file')
+                return redirect(request.url)
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(conf.UPLOAD_FOLDER, filename))
+                ret,acc=validaImagem(os.path.join(conf.UPLOAD_FOLDER, filename))
+                os.remove(os.path.join(conf.UPLOAD_FOLDER, filename))
+                return jsonify(
+                    type=ret,
+                    accuracy=float(acc)
+                )
+        except Exception as e:
+             return jsonify(
+                    err=400,
+                    msg=str(e.args[0])
+                )       
 
 
 
